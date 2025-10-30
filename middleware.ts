@@ -13,19 +13,29 @@ export function middleware(request: NextRequest) {
     const protectedRoutes = ["/dashboard", "/surat-masuk", "/surat-keluar", "/laporan-masuk", "/laporan-keluar", "/faq"]
     const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route))
 
+    // Early return for public routes that don't need token verification
+    if (!isProtectedRoute && pathname !== "/login") {
+        return NextResponse.next()
+    }
+
     // If accessing protected route without token, redirect to login
     if (isProtectedRoute && !token) {
         return NextResponse.redirect(new URL("/login", request.url))
     }
 
-    // If accessing protected route with invalid token, redirect to login
-    if (isProtectedRoute && token && !verifyToken(token)) {
-        return NextResponse.redirect(new URL("/login", request.url))
-    }
+    // Only verify token when necessary (protected routes or login page)
+    if (token) {
+        const isValidToken = verifyToken(token)
+        
+        // If accessing protected route with invalid token, redirect to login
+        if (isProtectedRoute && !isValidToken) {
+            return NextResponse.redirect(new URL("/login", request.url))
+        }
 
-    // If accessing login with valid token, redirect to dashboard
-    if (pathname === "/login" && token && verifyToken(token)) {
-        return NextResponse.redirect(new URL("/dashboard", request.url))
+        // If accessing login with valid token, redirect to dashboard
+        if (pathname === "/login" && isValidToken) {
+            return NextResponse.redirect(new URL("/dashboard", request.url))
+        }
     }
 
     return NextResponse.next()

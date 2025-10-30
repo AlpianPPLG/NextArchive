@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Plus, Search } from "lucide-react"
 import { FormDialog } from "@/components/surat-keluar/form-dialog"
 import { DataTable } from "@/components/surat-keluar/data-table"
+import { useDebounce } from "@/hooks/use-debounce"
 
 interface OutgoingLetter {
     id: string
@@ -16,6 +17,7 @@ interface OutgoingLetter {
     subject: string
     code: string | null
     description: string | null
+    classification_id: number | null
     number_of_copies: number
     archive_file_number: string | null
 }
@@ -26,6 +28,9 @@ function SuratKeluarPage() {
     const [search, setSearch] = useState("")
     const [dialogOpen, setDialogOpen] = useState(false)
     const [selectedLetter, setSelectedLetter] = useState<OutgoingLetter | null>(null)
+
+    // Debounce search to avoid excessive API calls
+    const debouncedSearch = useDebounce(search, 300)
 
     const fetchData = async (searchQuery = "") => {
         setLoading(true)
@@ -51,13 +56,8 @@ function SuratKeluarPage() {
     }
 
     useEffect(() => {
-        fetchData()
-    }, [])
-
-    const handleSearch = (value: string) => {
-        setSearch(value)
-        fetchData(value)
-    }
+        fetchData(debouncedSearch)
+    }, [debouncedSearch])
 
     const handleEdit = (letter: OutgoingLetter) => {
         setSelectedLetter(letter)
@@ -84,7 +84,7 @@ function SuratKeluarPage() {
 
     const handleDialogSubmit = () => {
         setSelectedLetter(null)
-        fetchData(search)
+        fetchData(debouncedSearch)
     }
 
     return (
@@ -105,7 +105,7 @@ function SuratKeluarPage() {
                     <Input
                         placeholder="Search...."
                         value={search}
-                        onChange={(e) => handleSearch(e.target.value)}
+                        onChange={(e) => setSearch(e.target.value)}
                         className="pl-10"
                     />
                 </div>

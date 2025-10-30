@@ -15,17 +15,26 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: "Invalid token" }, { status: 401 })
         }
 
-        // Get statistics
-        const incomingPending = await query("SELECT COUNT(*) as count FROM incoming_letters WHERE is_archived = FALSE")
-        const incomingArchived = await query("SELECT COUNT(*) as count FROM incoming_letters WHERE is_archived = TRUE")
-        const outgoingPending = await query("SELECT COUNT(*) as count FROM outgoing_letters WHERE is_archived = FALSE")
-        const outgoingArchived = await query("SELECT COUNT(*) as count FROM outgoing_letters WHERE is_archived = TRUE")
+        // Get statistics with a single optimized query
+        const results = await query(`
+            SELECT 
+                SUM(CASE WHEN table_name = 'incoming' AND is_archived = FALSE THEN 1 ELSE 0 END) as incoming_pending,
+                SUM(CASE WHEN table_name = 'incoming' AND is_archived = TRUE THEN 1 ELSE 0 END) as incoming_archived,
+                SUM(CASE WHEN table_name = 'outgoing' AND is_archived = FALSE THEN 1 ELSE 0 END) as outgoing_pending,
+                SUM(CASE WHEN table_name = 'outgoing' AND is_archived = TRUE THEN 1 ELSE 0 END) as outgoing_archived
+            FROM (
+                SELECT 'incoming' as table_name, is_archived FROM incoming_letters
+                UNION ALL
+                SELECT 'outgoing' as table_name, is_archived FROM outgoing_letters
+            ) as combined_letters
+        `)
 
+        const row = (results as any[])[0] || {}
         const stats = {
-            suratMasuk: (incomingPending as any[])[0]?.count || 0,
-            laporanMasuk: (incomingArchived as any[])[0]?.count || 0,
-            suratKeluar: (outgoingPending as any[])[0]?.count || 0,
-            laporanKeluar: (outgoingArchived as any[])[0]?.count || 0,
+            suratMasuk: Number(row.incoming_pending) || 0,
+            laporanMasuk: Number(row.incoming_archived) || 0,
+            suratKeluar: Number(row.outgoing_pending) || 0,
+            laporanKeluar: Number(row.outgoing_archived) || 0,
         }
 
         return NextResponse.json(stats, { status: 200 })

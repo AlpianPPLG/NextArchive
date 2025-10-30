@@ -13,6 +13,7 @@ interface OutgoingLetter {
     subject: string
     code: string | null
     description: string | null
+    classification_id: number | null
     number_of_copies: number
     archive_file_number: string | null
 }

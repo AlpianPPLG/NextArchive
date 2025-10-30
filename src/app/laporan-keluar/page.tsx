@@ -6,12 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search } from "lucide-react"
 import { ReportTable } from "@/components/report/report-table"
-
-interface Classification {
-    id: number
-    code: string
-    description: string
-}
+import { useDebounce } from "@/hooks/use-debounce"
+import { useClassifications } from "@/hooks/use-classifications"
 
 interface ReportData {
     id: string
@@ -30,23 +26,10 @@ export default function LaporanKeluarPage() {
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState("")
     const [classificationId, setClassificationId] = useState("all")
-    const [classifications, setClassifications] = useState<Classification[]>([])
 
-    useEffect(() => {
-        const fetchClassifications = async () => {
-            try {
-                const response = await fetch("/api/classifications")
-                if (response.ok) {
-                    const data = await response.json()
-                    setClassifications(data)
-                }
-            } catch (error) {
-                console.error("Failed to fetch classifications:", error)
-            }
-        }
-
-        fetchClassifications()
-    }, [])
+    // Debounce search to avoid excessive API calls
+    const debouncedSearch = useDebounce(search, 300)
+    const { classifications } = useClassifications()
 
     useEffect(() => {
         const fetchData = async () => {
@@ -54,7 +37,7 @@ export default function LaporanKeluarPage() {
             try {
                 const params = new URLSearchParams()
                 if (classificationId !== "all") params.append("classificationId", classificationId)
-                if (search) params.append("search", search)
+                if (debouncedSearch) params.append("search", debouncedSearch)
 
                 const response = await fetch(`/api/outgoing-letters/archived?${params}`)
                 if (response.ok) {
@@ -69,7 +52,7 @@ export default function LaporanKeluarPage() {
         }
 
         fetchData()
-    }, [classificationId, search])
+    }, [classificationId, debouncedSearch])
 
     return (
         <MainLayout>

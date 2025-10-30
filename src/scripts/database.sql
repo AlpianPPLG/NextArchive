@@ -42,7 +42,10 @@ CREATE TABLE IF NOT EXISTS incoming_letters (
     FOREIGN KEY (classification_id) REFERENCES classifications(id) ON DELETE SET NULL,
     FOREIGN KEY (recorded_by_user_id) REFERENCES users(id) ON DELETE RESTRICT,
     INDEX idx_is_archived (is_archived),
-    INDEX idx_classification_id (classification_id)
+    INDEX idx_classification_id (classification_id),
+    INDEX idx_archived_classification (is_archived, classification_id),
+    INDEX idx_created_at (created_at DESC),
+    FULLTEXT INDEX idx_search (letter_number, subject, sender)
     );
 
 -- 4. Outgoing Letters Table
@@ -63,7 +66,10 @@ CREATE TABLE IF NOT EXISTS outgoing_letters (
     FOREIGN KEY (classification_id) REFERENCES classifications(id) ON DELETE SET NULL,
     FOREIGN KEY (recorded_by_user_id) REFERENCES users(id) ON DELETE RESTRICT,
     INDEX idx_is_archived (is_archived),
-    INDEX idx_classification_id (classification_id)
+    INDEX idx_classification_id (classification_id),
+    INDEX idx_archived_classification (is_archived, classification_id),
+    INDEX idx_created_at (created_at DESC),
+    FULLTEXT INDEX idx_search (letter_number, subject, destination)
     );
 
 -- 5. FAQ Table

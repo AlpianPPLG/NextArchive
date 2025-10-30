@@ -10,12 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
-
-interface Classification {
-    id: number
-    code: string
-    description: string
-}
+import { useClassifications } from "@/hooks/use-classifications"
 
 interface IncomingLetter {
     id: string
@@ -37,7 +32,7 @@ interface FormDialogProps {
 
 export function FormDialog({ open, onOpenChange, onSubmit, letter }: FormDialogProps) {
     const [loading, setLoading] = useState(false)
-    const [classifications, setClassifications] = useState<Classification[]>([])
+    const { classifications } = useClassifications()
     const [formData, setFormData] = useState({
         letterNumber: "",
         sender: "",
@@ -47,22 +42,6 @@ export function FormDialog({ open, onOpenChange, onSubmit, letter }: FormDialogP
         numberOfCopies: "1",
         archiveFileNumber: "",
     })
-
-    useEffect(() => {
-        const fetchClassifications = async () => {
-            try {
-                const response = await fetch("/api/classifications")
-                if (response.ok) {
-                    const data = await response.json()
-                    setClassifications(data)
-                }
-            } catch (error) {
-                console.error("Failed to fetch classifications:", error)
-            }
-        }
-
-        fetchClassifications()
-    }, [])
 
     useEffect(() => {
         if (letter) {

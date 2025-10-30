@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Plus, Search } from "lucide-react"
 import { FormDialog } from "@/components/surat-masuk/form-dialog"
 import { DataTable } from "@/components/surat-masuk/data-table"
+import { useDebounce } from "@/hooks/use-debounce"
 
 interface IncomingLetter {
     id: string
@@ -16,6 +17,7 @@ interface IncomingLetter {
     subject: string
     code: string | null
     description: string | null
+    classification_id: number | null
     number_of_copies: number
     archive_file_number: string | null
 }
@@ -26,6 +28,9 @@ export default function SuratMasukPage() {
     const [search, setSearch] = useState("")
     const [dialogOpen, setDialogOpen] = useState(false)
     const [selectedLetter, setSelectedLetter] = useState<IncomingLetter | null>(null)
+
+    // Debounce search to avoid excessive API calls
+    const debouncedSearch = useDebounce(search, 300)
 
     const fetchData = async (searchQuery = "") => {
         setLoading(true)
@@ -46,13 +51,8 @@ export default function SuratMasukPage() {
     }
 
     useEffect(() => {
-        fetchData()
-    }, [])
-
-    const handleSearch = (value: string) => {
-        setSearch(value)
-        fetchData(value)
-    }
+        fetchData(debouncedSearch)
+    }, [debouncedSearch])
 
     const handleEdit = (letter: IncomingLetter) => {
         setSelectedLetter(letter)
@@ -65,7 +65,7 @@ export default function SuratMasukPage() {
 
     const handleDialogSubmit = () => {
         setSelectedLetter(null)
-        fetchData(search)
+        fetchData(debouncedSearch)
     }
 
     return (
@@ -86,7 +86,7 @@ export default function SuratMasukPage() {
                     <Input
                         placeholder="Search...."
                         value={search}
-                        onChange={(e) => handleSearch(e.target.value)}
+                        onChange={(e) => setSearch(e.target.value)}
                         className="pl-10"
                     />
                 </div>

@@ -34,7 +34,7 @@ export function useAuth() {
             }
         }
 
-        checkAuth().then(r => r)
+        checkAuth()
     }, [])
 
     const logout = async () => {
