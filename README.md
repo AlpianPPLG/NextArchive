@@ -1,36 +1,299 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# e-Arsip Digital - Sistem Manajemen Surat Masuk & Keluar
 
-## Getting Started
+Sistem informasi arsip digital yang dirancang untuk mengelola seluruh siklus hidup surat masuk dan surat keluar dalam sebuah organisasi dengan efisien dan profesional.
 
-First, run the development server:
+## Fitur Utama
 
-```bash
+- **Authentication**: Sistem login admin dengan JWT dan bcrypt password hashing
+- **Dashboard**: KPI cards menampilkan statistik real-time surat masuk/keluar
+- **Manajemen Surat Masuk**: CRUD lengkap untuk surat yang diterima
+- **Manajemen Surat Keluar**: CRUD lengkap untuk surat yang dikirim
+- **Laporan & Filtering**: Filter berdasarkan klasifikasi dengan pencarian
+- **FAQ**: Halaman bantuan untuk pengguna
+- **Landing Page**: Halaman marketing informatif
+
+## Tech Stack
+
+- **Frontend**: Next.js 16, React 19, TypeScript, Tailwind CSS v4
+- **UI Components**: ShadCN UI, Radix UI
+- **Backend**: Next.js API Routes
+- **Database**: MySQL
+- **Authentication**: JWT + Bcrypt
+- **Styling**: Tailwind CSS dengan design tokens
+
+## Prerequisites
+
+- Node.js 18+
+- MySQL 8.0+
+- npm atau yarn
+
+## Setup & Installation
+
+### 1. Clone Repository
+\`\`\`bash
+git clone <repository-url>
+cd e-arsip-digital
+\`\`\`
+
+### 2. Install Dependencies
+\`\`\`bash
+npm install
+\`\`\`
+
+### 3. Setup Database
+
+Buat database MySQL dan jalankan script SQL:
+
+\`\`\`bash
+mysql -u root -p < scripts/01-init-database.sql
+\`\`\`
+
+Atau gunakan MySQL client untuk menjalankan script secara manual.
+
+### 4. Configure Environment Variables
+
+Buat file `.env.local` di root project:
+
+\`\`\`env
+# Database Configuration
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=e_arsip_db
+
+# JWT Authentication
+JWT_SECRET=e97a3146f0c3bd9309ab92a47a43be34e31d29aa6e629b52825578c716df7de1
+
+# Base URL
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+\`\`\`
+
+### 5. Run Development Server
+
+\`\`\`bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+\`\`\`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Aplikasi akan berjalan di `http://localhost:3000`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Default Login Credentials
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Username**: `admin_arsip`
+- **Password**: `password123`
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+\`\`\`
+e-arsip-digital/
+├── app/
+│   ├── (public)/              # Public pages (landing page)
+│   ├── api/                   # API routes
+│   │   ├── auth/              # Authentication endpoints
+│   │   ├── dashboard/         # Dashboard statistics
+│   │   ├── incoming-letters/  # Incoming letters CRUD
+│   │   ├── outgoing-letters/  # Outgoing letters CRUD
+│   │   ├── classifications/   # Classifications
+│   │   └── faqs/              # FAQ data
+│   ├── dashboard/             # Dashboard page
+│   ├── surat-masuk/           # Incoming letters page
+│   ├── surat-keluar/          # Outgoing letters page
+│   ├── laporan-masuk/         # Incoming letters report
+│   ├── laporan-keluar/        # Outgoing letters report
+│   ├── faq/                   # FAQ page
+│   ├── login/                 # Login page
+│   ├── layout.tsx             # Root layout
+│   ├── page.tsx               # Root page (redirect)
+│   └── globals.css            # Global styles
+├── components/
+│   ├── layout/                # Layout components
+│   │   ├── sidebar.tsx
+│   │   ├── header.tsx
+│   │   └── main-layout.tsx
+│   ├── dashboard/             # Dashboard components
+│   │   └── kpi-card.tsx
+│   ├── surat-masuk/           # Incoming letters components
+│   │   ├── form-dialog.tsx
+│   │   └── data-table.tsx
+│   ├── surat-keluar/          # Outgoing letters components
+│   │   ├── form-dialog.tsx
+│   │   └── data-table.tsx
+│   ├── report/                # Report components
+│   │   └── report-table.tsx
+│   ├── faq/                   # FAQ components
+│   │   └── faq-item.tsx
+│   └── ui/                    # ShadCN UI components
+├── hooks/
+│   ├── use-auth.ts            # Authentication hook
+│   └── use-mobile.ts          # Mobile detection hook
+├── lib/
+│   ├── db.ts                  # Database connection
+│   ├── auth.ts                # Authentication utilities
+│   ├── types.ts               # TypeScript types
+│   ├── utils.ts               # Utility functions
+│   └── utils/
+│       └── uuid.ts            # UUID generator
+├── scripts/
+│   └── 01-init-database.sql   # Database initialization
+├── .env.local                 # Environment variables
+├── package.json
+├── tsconfig.json
+├── next.config.mjs
+└── README.md
+\`\`\`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## API Endpoints
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Authentication
+- `POST /api/auth/login` - Login admin
+- `POST /api/auth/logout` - Logout
+- `GET /api/auth/me` - Get current user
 
-## Deploy on Vercel
+### Dashboard
+- `GET /api/dashboard/stats` - Get statistics
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Incoming Letters
+- `GET /api/incoming-letters` - Get pending incoming letters
+- `GET /api/incoming-letters/[id]` - Get specific letter
+- `POST /api/incoming-letters` - Create new letter
+- `PUT /api/incoming-letters/[id]` - Update letter
+- `DELETE /api/incoming-letters/[id]` - Delete letter
+- `GET /api/incoming-letters/archived` - Get archived letters
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Outgoing Letters
+- `GET /api/outgoing-letters` - Get pending outgoing letters
+- `GET /api/outgoing-letters/[id]` - Get specific letter
+- `POST /api/outgoing-letters` - Create new letter
+- `PUT /api/outgoing-letters/[id]` - Update letter
+- `DELETE /api/outgoing-letters/[id]` - Delete letter
+- `GET /api/outgoing-letters/archived` - Get archived letters
+
+### Classifications
+- `GET /api/classifications` - Get all classifications
+
+### FAQ
+- `GET /api/faqs` - Get all FAQs
+
+## Database Schema
+
+### users
+- id (UUID)
+- username (VARCHAR)
+- email (VARCHAR)
+- password_hash (VARCHAR)
+- full_name (VARCHAR)
+- role (ENUM: ADMIN)
+- created_at (TIMESTAMP)
+- updated_at (TIMESTAMP)
+
+### classifications
+- id (INT, AUTO_INCREMENT)
+- code (VARCHAR, UNIQUE)
+- description (VARCHAR)
+- shelf_location (VARCHAR)
+- created_at (TIMESTAMP)
+- updated_at (TIMESTAMP)
+
+### incoming_letters
+- id (UUID)
+- letter_number (VARCHAR, UNIQUE)
+- sender (VARCHAR)
+- incoming_date (DATE)
+- subject (VARCHAR)
+- file_url (VARCHAR)
+- classification_id (INT, FK)
+- number_of_copies (INT)
+- archive_file_number (VARCHAR)
+- is_archived (BOOLEAN)
+- recorded_by_user_id (UUID, FK)
+- created_at (TIMESTAMP)
+- updated_at (TIMESTAMP)
+
+### outgoing_letters
+- id (UUID)
+- letter_number (VARCHAR, UNIQUE)
+- destination (VARCHAR)
+- outgoing_date (DATE)
+- subject (VARCHAR)
+- file_url (VARCHAR)
+- classification_id (INT, FK)
+- number_of_copies (INT)
+- archive_file_number (VARCHAR)
+- is_archived (BOOLEAN)
+- recorded_by_user_id (UUID, FK)
+- created_at (TIMESTAMP)
+- updated_at (TIMESTAMP)
+
+### faqs
+- id (INT, AUTO_INCREMENT)
+- question (VARCHAR)
+- answer (TEXT)
+- sort_order (INT)
+- created_at (TIMESTAMP)
+- updated_at (TIMESTAMP)
+
+## Fitur Keamanan
+
+- **JWT Authentication**: Token-based authentication dengan expiry 24 jam
+- **Password Hashing**: Bcrypt dengan salt rounds 10
+- **HTTP-Only Cookies**: Token disimpan di HTTP-only cookies
+- **CORS Protection**: Configured untuk production
+- **Input Validation**: Validasi data di server-side
+
+## Development
+
+### Build untuk Production
+\`\`\`bash
+npm run build
+npm start
+\`\`\`
+
+### Linting
+\`\`\`bash
+npm run lint
+\`\`\`
+
+## Troubleshooting
+
+### Database Connection Error
+- Pastikan MySQL service berjalan
+- Verifikasi credentials di `.env.local`
+- Pastikan database `e_arsip_db` sudah dibuat
+
+### Login Gagal
+- Pastikan database sudah diinisialisasi dengan script SQL
+- Verifikasi username dan password di database
+- Check browser console untuk error messages
+
+### Port 3000 Sudah Digunakan
+\`\`\`bash
+npm run dev -- -p 3001
+\`\`\`
+
+## Performance Optimization
+
+- Database queries menggunakan indexes pada `is_archived` dan `classification_id`
+- Connection pooling untuk MySQL
+- Lazy loading untuk components
+- Image optimization dengan Next.js Image component
+
+## Future Enhancements
+
+- File upload untuk dokumen surat
+- Export laporan ke PDF/Excel
+- Email notifications
+- Multi-user support dengan role management
+- Audit trail untuk semua operasi
+- Advanced search dengan full-text search
+- Dashboard analytics dengan charts
+
+## License
+
+Proprietary - All Rights Reserved 2025
+
+## Support
+
+Untuk bantuan atau pertanyaan, hubungi admin@arsip.local
+
+---
+
+**Created with v0.app** - Modern, Professional, No Spaghetti Code
