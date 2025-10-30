@@ -94,8 +94,8 @@ INSERT INTO incoming_letters (id, letter_number, sender, incoming_date, subject,
     ('550e8400-e29b-41d4-a716-446655440004', 'HR-012/IX/2025', 'Departemen SDM', '2025-09-18', 'Pengumuman Rekrutmen', 3, 1, 'C001', TRUE, '550e8400-e29b-41d4-a716-446655440000');
 
 INSERT INTO outgoing_letters (id, letter_number, destination, outgoing_date, subject, classification_id, number_of_copies, archive_file_number, is_archived, recorded_by_user_id) VALUES
-     ('550e8400-e29b-41d4-a716-446655440005', 'BALAS/2025/001', 'Dinas A', '2025-09-15', 'Surat Balasan Kerjasama', 1, 1, 'A002', TRUE, '550e8400-e29b-41d4-a716-446655440000'),
-     ('550e8400-e29b-41d4-a716-446655440006', 'NOTIF/2025/001', 'Semua Departemen', '2025-09-20', 'Pengumuman Penting', 1, 5, 'A003', FALSE, '550e8400-e29b-41d4-a716-446655440000');
+    ('550e8400-e29b-41d4-a716-446655440005', 'BALAS/2025/001', 'Dinas A', '2025-09-15', 'Surat Balasan Kerjasama', 1, 1, 'A002', TRUE, '550e8400-e29b-41d4-a716-446655440000'),
+    ('550e8400-e29b-41d4-a716-446655440006', 'NOTIF/2025/001', 'Semua Departemen', '2025-09-20', 'Pengumuman Penting', 1, 5, 'A003', FALSE, '550e8400-e29b-41d4-a716-446655440000');
 
 INSERT INTO faqs (question, answer, sort_order) VALUES
     ('Bagaimana cara login ke sistem?', 'Gunakan username dan password yang telah diberikan oleh administrator untuk login ke sistem e-Arsip Digital.', 1),
@@ -117,4 +117,3 @@ INSERT INTO faqs (question, answer, sort_order) VALUES
 
 -- Query untuk cek email yang sudah ada
 -- SELECT id FROM users WHERE email = ?;
-

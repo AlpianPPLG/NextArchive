@@ -5,7 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Mail, BarChart3, HelpCircle, LogOut, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import { useAuth } from "@/hooks/use-auth"
 import { cn } from "@/lib/utils"
 
@@ -85,6 +85,7 @@ export function Sidebar() {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="p-0 w-64">
+                    <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                     <SidebarContent onItemClick={() => setOpen(false)} />
                 </SheetContent>
             </Sheet>
@@ -96,4 +97,3 @@ export function Sidebar() {
         </>
     )
 }
-
