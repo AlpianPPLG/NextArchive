@@ -12,6 +12,10 @@ export async function GET(request: NextRequest) {
         const searchParams = request.nextUrl.searchParams
         const classificationId = searchParams.get("classificationId")
         const search = searchParams.get("search") || ""
+        const month = searchParams.get("month")
+        const year = searchParams.get("year")
+        const startDate = searchParams.get("startDate")
+        const endDate = searchParams.get("endDate")
 
         let sql = `
       SELECT il.*, c.code, c.description 
@@ -31,7 +35,22 @@ export async function GET(request: NextRequest) {
             params.push(`%${search}%`, `%${search}%`, `%${search}%`)
         }
 
-        sql += ` ORDER BY il.created_at DESC`
+        // Period filters
+        if (month && year) {
+            // Monthly filter
+            sql += ` AND MONTH(il.incoming_date) = ? AND YEAR(il.incoming_date) = ?`
+            params.push(Number.parseInt(month), Number.parseInt(year))
+        } else if (year && !month) {
+            // Yearly filter
+            sql += ` AND YEAR(il.incoming_date) = ?`
+            params.push(Number.parseInt(year))
+        } else if (startDate && endDate) {
+            // Custom date range filter
+            sql += ` AND DATE(il.incoming_date) BETWEEN ? AND ?`
+            params.push(startDate, endDate)
+        }
+
+        sql += ` ORDER BY il.incoming_date DESC, il.created_at DESC`
 
         const results = await query(sql, params)
         return NextResponse.json(results, { status: 200 })

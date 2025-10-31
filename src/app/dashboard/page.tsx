@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { MainLayout } from "@/components/layout/main-layout"
 import { KpiCard } from "@/components/dashboard/kpi-card"
+import { ChartOverview } from "@/components/dashboard/chart-overview"
 import { Mail, Send, Archive, Clock } from "lucide-react"
 
 export default function DashboardPage() {
@@ -94,6 +95,15 @@ export default function DashboardPage() {
                         />
                     ))}
                 </div>
+                {/* Chart Overview Section */}
+                <div className="space-y-4">
+                    <div>
+                        <h2 className="text-xl font-semibold">Laporan Statistik</h2>
+                        <p className="text-muted-foreground text-sm">Visualisasi data surat dalam bentuk grafik</p>
+                    </div>
+                    <ChartOverview data={stats} />
+                </div>
+
 
                 {/* Recent Activity Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

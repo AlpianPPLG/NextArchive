@@ -11,10 +11,11 @@ interface IncomingLetter {
     sender: string
     incoming_date: string
     subject: string
-    code: string | null
-    description: string | null
+    classification_id: number | null
     number_of_copies: number
     archive_file_number: string | null
+    code?: string
+    description?: string
 }
 
 interface DataTableProps {
