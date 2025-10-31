@@ -14,6 +14,7 @@ interface OutgoingLetter {
     destination: string
     outgoing_date: string
     subject: string
+    classification_id: number | null
     code: string | null
     description: string | null
     number_of_copies: number
@@ -36,27 +37,27 @@ function SuratKeluarPage() {
             const response = await fetch(`/api/outgoing-letters?${params}`)
             const result = await response.json()
 
-            if (!response.ok) {
-                throw new Error(result.error || 'Failed to fetch data')
+            if (response.ok) {
+                setData(result)
+            } else {
+                console.error("Failed to fetch data:", result.error || 'Failed to fetch data')
+                setData([])
             }
-
-            setData(result)
         } catch (error) {
             console.error("Failed to fetch data:", error)
             setData([])
-            // You might want to show a toast notification here for better UX
         } finally {
             setLoading(false)
         }
     }
 
     useEffect(() => {
-        fetchData()
+        void fetchData()
     }, [])
 
     const handleSearch = (value: string) => {
         setSearch(value)
-        fetchData(value)
+        void fetchData(value)
     }
 
     const handleEdit = (letter: OutgoingLetter) => {
@@ -70,21 +71,20 @@ function SuratKeluarPage() {
                 method: 'DELETE',
             });
 
-            if (!response.ok) {
+            if (response.ok) {
+                setData(data.filter((item) => item.id !== id));
+            } else {
                 const error = await response.json();
-                throw new Error(error.message || 'Failed to delete letter');
+                console.error('Failed to delete letter:', error.message || 'Failed to delete letter');
             }
-
-            setData(data.filter((item) => item.id !== id));
         } catch (error) {
             console.error('Failed to delete letter:', error);
-            // You might want to show a toast notification here for better UX
         }
     }
 
     const handleDialogSubmit = () => {
         setSelectedLetter(null)
-        fetchData(search)
+        void fetchData(search)
     }
 
     return (

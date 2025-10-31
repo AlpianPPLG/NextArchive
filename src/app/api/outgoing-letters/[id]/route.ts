@@ -1,23 +1,31 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { query } from "@/lib/db"
 import { verifyToken } from "@/lib/auth"
+import type { OutgoingLetter } from "@/lib/types"
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+interface OutgoingLetterWithClassification extends OutgoingLetter {
+    code?: string
+    description?: string
+}
+
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const token = request.cookies.get("auth_token")?.value
         if (!token || !verifyToken(token)) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         }
 
+        const { id } = await params
+
         const results = await query(
             `SELECT ol.*, c.code, c.description 
        FROM outgoing_letters ol
        LEFT JOIN classifications c ON ol.classification_id = c.id
        WHERE ol.id = ?`,
-            [params.id],
+            [id],
         )
 
-        const letters = results as any[]
+        const letters = results as OutgoingLetterWithClassification[]
         if (letters.length === 0) {
             return NextResponse.json({ error: "Surat tidak ditemukan" }, { status: 404 })
         }
@@ -29,12 +37,14 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const token = request.cookies.get("auth_token")?.value
         if (!token || !verifyToken(token)) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         }
+
+        const { id } = await params
 
         const body = await request.json()
         const {
@@ -62,7 +72,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
                 numberOfCopies || 1,
                 archiveFileNumber || null,
                 isArchived || false,
-                params.id,
+                id,
             ],
         )
 
@@ -73,14 +83,16 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const token = request.cookies.get("auth_token")?.value
         if (!token || !verifyToken(token)) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         }
 
-        await query("DELETE FROM outgoing_letters WHERE id = ?", [params.id])
+        const { id } = await params
+
+        await query("DELETE FROM outgoing_letters WHERE id = ?", [id])
 
         return NextResponse.json({ success: true }, { status: 200 })
     } catch (error) {
