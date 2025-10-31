@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { query } from "@/lib/db"
 import { verifyToken } from "@/lib/auth"
+import type { Classification } from "@/lib/types"
 
 export async function GET(request: NextRequest) {
     try {
@@ -10,7 +11,8 @@ export async function GET(request: NextRequest) {
         }
 
         const results = await query("SELECT * FROM classifications ORDER BY code ASC")
-        return NextResponse.json(results, { status: 200 })
+        const classifications = results as Classification[]
+        return NextResponse.json(classifications, { status: 200 })
     } catch (error) {
         console.error("Get classifications error:", error)
         return NextResponse.json({ error: "Internal server error" }, { status: 500 })

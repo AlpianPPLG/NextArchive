@@ -30,15 +30,18 @@ export default function LandingPage() {
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
-                        <Link href="#features">
+                        {/* eslint-disable-next-line */}
+                        <a href="#features">
                             <Button variant="ghost">Fitur</Button>
-                        </Link>
-                        <Link href="#about">
+                        </a>
+                        {/* eslint-disable-next-line */}
+                        <a href="#about">
                             <Button variant="ghost">Tentang</Button>
-                        </Link>
-                        <Link href="#contact">
+                        </a>
+                        {/* eslint-disable-next-line */}
+                        <a href="#contact">
                             <Button variant="ghost">Kontak</Button>
-                        </Link>
+                        </a>
                         <Link href="/login">
                             <Button className="bg-green-600 hover:bg-green-700">Login</Button>
                         </Link>
@@ -61,11 +64,11 @@ export default function LandingPage() {
                                 <ArrowRight className="w-4 h-4 ml-2" />
                             </Button>
                         </Link>
-                        <Link href="#features">
+                        <a href="#features">
                             <Button size="lg" variant="outline" className="border-white text-white hover:bg-green-700 bg-transparent">
                                 Pelajari Lebih Lanjut
                             </Button>
-                        </Link>
+                        </a>
                     </div>
                 </div>
             </section>
