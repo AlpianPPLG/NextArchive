@@ -61,7 +61,7 @@ export default function Footer() {
                 <div className="mt-8 pt-8 border-t">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                         <p className="text-sm text-muted-foreground">
-                            © 2025 NextArchive. All rights reserved.
+                            © Copyright 2025. All Rights Reserved.
                         </p>
                         <ul className="flex gap-6">
                             {footerLinks.legal.map((link) => (

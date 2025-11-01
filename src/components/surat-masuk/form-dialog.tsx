@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { FileUpload } from "@/components/shared/file-upload"
 import { toast } from "sonner"
 
 interface Classification {
@@ -23,6 +24,7 @@ interface IncomingLetter {
     sender: string
     incoming_date: string
     subject: string
+    file_url?: string | null
     classification_id: number | null
     number_of_copies: number
     archive_file_number: string | null
@@ -36,6 +38,7 @@ interface FormDialogProps {
 }
 
 export function FormDialog({ open, onOpenChange, onSubmit, letter }: FormDialogProps) {
+    const [selectedFile, setSelectedFile] = useState<File | null>(null)
     const [loading, setLoading] = useState(false)
     const [classifications, setClassifications] = useState<Classification[]>([])
     const [formData, setFormData] = useState({
@@ -44,6 +47,7 @@ export function FormDialog({ open, onOpenChange, onSubmit, letter }: FormDialogP
         incomingDate: "",
         subject: "",
         classificationId: "",
+        fileUrl: "",
         numberOfCopies: "1",
         archiveFileNumber: "",
     })
@@ -70,6 +74,7 @@ export function FormDialog({ open, onOpenChange, onSubmit, letter }: FormDialogP
                 letterNumber: letter.letter_number,
                 sender: letter.sender,
                 incomingDate: letter.incoming_date,
+                fileUrl: letter.file_url || "",
                 subject: letter.subject,
                 classificationId: letter.classification_id?.toString() || "",
                 numberOfCopies: letter.number_of_copies.toString(),
@@ -80,12 +85,14 @@ export function FormDialog({ open, onOpenChange, onSubmit, letter }: FormDialogP
                 letterNumber: "",
                 sender: "",
                 incomingDate: "",
+                fileUrl: "",
                 subject: "",
                 classificationId: "",
                 numberOfCopies: "1",
                 archiveFileNumber: "",
             })
         }
+        setSelectedFile(null)
     }, [letter, open])
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -93,6 +100,28 @@ export function FormDialog({ open, onOpenChange, onSubmit, letter }: FormDialogP
         setLoading(true)
 
         try {
+            let fileUrl = formData.fileUrl
+
+            // Upload file if selected
+            if (selectedFile) {
+                const uploadFormData = new FormData()
+                uploadFormData.append('file', selectedFile)
+
+                const uploadResponse = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: uploadFormData,
+                })
+
+                if (uploadResponse.ok) {
+                    const uploadData = await uploadResponse.json()
+                    fileUrl = uploadData.url
+                } else {
+                    toast.error("Gagal mengupload file")
+                    setLoading(false)
+                    return
+                }
+            }
+
             const url = letter ? `/api/incoming-letters/${letter.id}` : "/api/incoming-letters"
             const method = letter ? "PUT" : "POST"
 
@@ -104,6 +133,7 @@ export function FormDialog({ open, onOpenChange, onSubmit, letter }: FormDialogP
                     sender: formData.sender,
                     incomingDate: formData.incomingDate,
                     subject: formData.subject,
+                    fileUrl: fileUrl || null,
                     classificationId: formData.classificationId ? Number.parseInt(formData.classificationId) : null,
                     numberOfCopies: Number.parseInt(formData.numberOfCopies),
                     archiveFileNumber: formData.archiveFileNumber,
@@ -217,6 +247,16 @@ export function FormDialog({ open, onOpenChange, onSubmit, letter }: FormDialogP
                             value={formData.archiveFileNumber}
                             onChange={(e) => setFormData({ ...formData, archiveFileNumber: e.target.value })}
                             placeholder="A001"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label>File Surat</Label>
+                        <FileUpload
+                            onFileSelect={(file) => setSelectedFile(file)}
+                            onFileRemove={() => setSelectedFile(null)}
+                            currentFileUrl={formData.fileUrl}
+                            disabled={loading}
                         />
                     </div>
 

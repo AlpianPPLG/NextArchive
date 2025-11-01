@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react"
 import { MainLayout } from "@/components/layout/main-layout"
 import { KpiCard } from "@/components/dashboard/kpi-card"
-import { ChartOverview } from "@/components/dashboard/chart-overview"
+import { EnhancedChartOverview } from "@/components/dashboard/enhanced-chart-overview"
+import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton"
 import { Mail, Send, Archive, Clock } from "lucide-react"
 
 export default function DashboardPage() {
+    const [loading, setLoading] = useState(true)
     const [stats, setStats] = useState({
         incomingTotal: 0,
         outgoingTotal: 0,
@@ -16,6 +18,7 @@ export default function DashboardPage() {
 
     useEffect(() => {
         const fetchStats = async () => {
+            setLoading(true)
             try {
                 const response = await fetch("/api/dashboard/stats")
                 if (response.ok) {
@@ -24,6 +27,8 @@ export default function DashboardPage() {
                 }
             } catch (error) {
                 console.error("Failed to fetch stats:", error)
+            } finally {
+                setLoading(false)
             }
         }
 
@@ -69,6 +74,14 @@ export default function DashboardPage() {
         }
     ]
 
+    if (loading) {
+        return (
+            <MainLayout>
+                <DashboardSkeleton />
+            </MainLayout>
+        )
+    }
+
     return (
         <MainLayout>
             <div className="space-y-6">
@@ -95,35 +108,14 @@ export default function DashboardPage() {
                         />
                     ))}
                 </div>
+
                 {/* Chart Overview Section */}
                 <div className="space-y-4">
                     <div>
                         <h2 className="text-xl font-semibold">Laporan Statistik</h2>
-                        <p className="text-muted-foreground text-sm">Visualisasi data surat dalam bentuk grafik</p>
+                        <p className="text-muted-foreground text-sm">Visualisasi data surat dalam bentuk grafik interaktif</p>
                     </div>
-                    <ChartOverview data={stats} />
-                </div>
-
-
-                {/* Recent Activity Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Latest Documents */}
-                    <div className="bg-card rounded-xl border p-6">
-                        <h2 className="text-lg font-semibold mb-4">Dokumen Terbaru</h2>
-                        <div className="space-y-4">
-                            {/* Placeholder for recent documents list */}
-                            <p className="text-muted-foreground text-sm">Belum ada dokumen terbaru</p>
-                        </div>
-                    </div>
-
-                    {/* Activity Timeline */}
-                    <div className="bg-card rounded-xl border p-6">
-                        <h2 className="text-lg font-semibold mb-4">Aktivitas Terkini</h2>
-                        <div className="space-y-4">
-                            {/* Placeholder for activity timeline */}
-                            <p className="text-muted-foreground text-sm">Belum ada aktivitas terbaru</p>
-                        </div>
-                    </div>
+                    <EnhancedChartOverview data={stats} />
                 </div>
             </div>
         </MainLayout>

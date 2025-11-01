@@ -117,3 +117,25 @@ INSERT INTO faqs (question, answer, sort_order) VALUES
 
 -- Query untuk cek email yang sudah ada
 -- SELECT id FROM users WHERE email = ?;
+
+-- =====================================================
+-- QUERIES FOR FAQ MANAGEMENT
+-- =====================================================
+
+-- Query untuk insert FAQ baru
+-- INSERT INTO faqs (question, answer, sort_order)
+-- VALUES (?, ?, ?);
+-- Parameters: [question, answer, sort_order]
+
+-- Query untuk update FAQ
+-- UPDATE faqs SET question = ?, answer = ?, sort_order = ?
+-- WHERE id = ?;
+-- Parameters: [question, answer, sort_order, id]
+
+-- Query untuk delete FAQ
+-- DELETE FROM faqs WHERE id = ?;
+-- Parameters: [id]
+
+-- Query untuk get all FAQs ordered by sort_order
+-- SELECT * FROM faqs ORDER BY sort_order ASC, created_at DESC;
+

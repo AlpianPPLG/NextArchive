@@ -9,7 +9,7 @@ interface ReportData {
     destination?: string
     subject: string
     code: string | null
-    description: string | null
+    description?: string
     number_of_copies: number
     archive_file_number: string | null
     incoming_date?: string

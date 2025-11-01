@@ -102,17 +102,6 @@ function LoginForm() {
                                     {loading ? "Memproses..." : "Login"}
                                 </Button>
                             </form>
-                            <div className="mt-6 p-4 bg-blue-50 rounded-lg text-sm text-blue-800">
-                                <p className="font-semibold mb-2">Demo Credentials:</p>
-                                <p>
-                                    Username:{" "}
-                                    <code className="bg-blue-100 px-2 py-1 rounded">admin_arsip</code>
-                                </p>
-                                <p>
-                                    Password:{" "}
-                                    <code className="bg-blue-100 px-2 py-1 rounded">password123</code>
-                                </p>
-                            </div>
                         </CardContent>
                         <CardFooter className="flex justify-center">
                             <p className="text-sm text-gray-600">

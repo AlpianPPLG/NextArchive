@@ -25,8 +25,25 @@ export async function POST(request: NextRequest) {
         })
 
         return response
-    } catch (error) {
+    } catch (error: any) {
         console.error("Login error:", error)
-        return NextResponse.json({ error: "Terjadi kesalahan pada server" }, { status: 500 })
+
+        // Provide more specific error messages
+        if (error.code === 'ETIMEDOUT') {
+            return NextResponse.json({
+                error: "Tidak dapat terhubung ke database. Pastikan MySQL server berjalan dan konfigurasi database benar."
+            }, { status: 500 })
+        }
+
+        if (error.code === 'ECONNREFUSED') {
+            return NextResponse.json({
+                error: "Koneksi database ditolak. Periksa apakah MySQL server aktif."
+            }, { status: 500 })
+        }
+
+        return NextResponse.json({
+            error: "Terjadi kesalahan pada server",
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        }, { status: 500 })
     }
 }

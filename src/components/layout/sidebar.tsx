@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { Mail, BarChart3, HelpCircle, LogOut, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { useAuth } from "@/hooks/use-auth"
 import { cn } from "@/lib/utils"
 
@@ -57,8 +58,12 @@ function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
                 })}
             </nav>
 
-            {/* Logout */}
-            <div className="p-4 border-t border-green-700">
+            {/* Theme Toggle & Logout */}
+            <div className="p-4 border-t border-green-700 space-y-2">
+                <div className="flex items-center justify-between">
+                    <span className="text-sm">Tema</span>
+                    <ThemeToggle />
+                </div>
                 <Button onClick={logout} className="w-full bg-blue-500 hover:bg-blue-600 text-white">
                     <LogOut className="w-4 h-4 mr-2" />
                     Log Out

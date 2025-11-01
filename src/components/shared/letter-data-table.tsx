@@ -2,12 +2,14 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Trash2, Edit } from "lucide-react"
+import { Trash2, Edit, FileText } from "lucide-react"
+import { TableSkeleton } from "@/components/shared/table-skeleton"
 import { toast } from "sonner"
 
 interface BaseLetter {
     id: string
     letter_number: string
+    file_url?: string | null
     subject: string
     classification_id: number | null
     number_of_copies: number
@@ -51,7 +53,7 @@ export function LetterDataTable<T extends BaseLetter>({
     }
 
     if (loading) {
-        return <div className="text-center py-8 text-gray-500">Memuat data...</div>
+        return <TableSkeleton rows={5} columns={7} />
     }
 
     if (data.length === 0) {
@@ -67,6 +69,7 @@ export function LetterDataTable<T extends BaseLetter>({
                             <TableHead className="text-white whitespace-nowrap">No. Urut</TableHead>
                             <TableHead className="text-white whitespace-nowrap">Kode Klasifikasi</TableHead>
                             <TableHead className="text-white whitespace-nowrap">Uraian Informasi</TableHead>
+                            <TableHead className="text-white whitespace-nowrap">File</TableHead>
                             <TableHead className="text-white whitespace-nowrap">Jumlah</TableHead>
                             <TableHead className="text-white whitespace-nowrap">No. Isi Berkas</TableHead>
                             <TableHead className="text-white whitespace-nowrap">Actions</TableHead>
@@ -79,6 +82,21 @@ export function LetterDataTable<T extends BaseLetter>({
                                 <TableCell className="whitespace-nowrap">{letter.code || "-"}</TableCell>
                                 <TableCell className="max-w-[300px] truncate" title={letter.subject}>
                                     {letter.subject}
+                                </TableCell>
+                                <TableCell>
+                                    {letter.file_url ? (
+                                        <a
+                                            href={letter.file_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                                        >
+                                            <FileText className="w-4 h-4" />
+                                            <span className="text-sm">Lihat</span>
+                                        </a>
+                                    ) : (
+                                        <span className="text-gray-400 text-sm">-</span>
+                                    )}
                                 </TableCell>
                                 <TableCell>{letter.number_of_copies}</TableCell>
                                 <TableCell className="whitespace-nowrap">{letter.archive_file_number || "-"}</TableCell>
