@@ -9,6 +9,7 @@ import {
     PolarAngleAxis, PolarRadiusAxis, Radar
 } from "recharts"
 import { Download, Maximize2, TrendingUp, TrendingDown } from "lucide-react"
+import { toast } from "sonner"
 
 interface ChartData {
     incomingTotal: number
@@ -49,6 +50,125 @@ const TrendIndicator = ({ value }: { value: string }) => {
 export function EnhancedChartOverview({ data }: EnhancedChartOverviewProps) {
     const [selectedChart, setSelectedChart] = useState<string | null>(null)
     const chartRef = useRef<HTMLDivElement>(null)
+
+    // Function to export chart as PNG - Using SVG approach to avoid CSS parsing
+    const exportChartAsPNG = async (chartId: string, chartName: string) => {
+        const loadingToast = toast.loading("Mengexport chart...")
+
+        try {
+            const chartElement = document.getElementById(chartId)
+            if (!chartElement) {
+                toast.dismiss(loadingToast)
+                toast.error("Chart tidak ditemukan")
+                return
+            }
+
+            // Wait for chart to render
+            await new Promise(resolve => setTimeout(resolve, 500))
+
+            // Find the SVG element within the chart
+            const svgElement = chartElement.querySelector('svg')
+            if (!svgElement) {
+                toast.dismiss(loadingToast)
+                toast.error("Chart SVG tidak ditemukan")
+                return
+            }
+
+            // Get the chart title
+            const titleElement = chartElement.querySelector('h3')
+            const title = titleElement?.textContent || chartName
+
+            // Get SVG dimensions
+            const svgRect = svgElement.getBoundingClientRect()
+            const svgWidth = svgRect.width
+            const svgHeight = svgRect.height
+
+            // Create canvas with padding for title and borders
+            const padding = 40
+            const canvas = document.createElement('canvas')
+            const ctx = canvas.getContext('2d')
+            if (!ctx) {
+                toast.dismiss(loadingToast)
+                toast.error("Tidak dapat membuat canvas")
+                return
+            }
+
+            // Set canvas size with padding
+            canvas.width = (svgWidth + padding * 2) * 2 // 2x for quality
+            canvas.height = (svgHeight + padding * 3) * 2 // Extra padding for title
+
+            // Scale for high quality
+            ctx.scale(2, 2)
+
+            // Fill white background
+            ctx.fillStyle = '#ffffff'
+            ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+            // Draw title
+            ctx.fillStyle = '#000000'
+            ctx.font = 'bold 16px system-ui, -apple-system, sans-serif'
+            ctx.textAlign = 'center'
+            ctx.fillText(title, svgWidth / 2 + padding, padding / 2 + 10)
+
+            // Draw border
+            ctx.strokeStyle = '#e5e7eb'
+            ctx.lineWidth = 1
+            ctx.strokeRect(padding / 2, padding, svgWidth + padding, svgHeight + padding)
+
+            // Serialize SVG to string
+            const serializer = new XMLSerializer()
+            let svgString = serializer.serializeToString(svgElement)
+
+            // Remove any CSS custom properties from the SVG string
+            svgString = svgString.replace(/hsl\(var\(--[^)]+\)\)/g, '#000000')
+            svgString = svgString.replace(/var\(--[^)]+\)/g, '#000000')
+
+            // Create blob from SVG
+            const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' })
+            const url = URL.createObjectURL(svgBlob)
+
+            // Load SVG as image
+            const img = new Image()
+            img.onload = () => {
+                // Draw SVG image on canvas
+                ctx.drawImage(img, padding, padding + 20, svgWidth, svgHeight)
+                URL.revokeObjectURL(url)
+
+                // Convert canvas to blob and download
+                canvas.toBlob((blob) => {
+                    toast.dismiss(loadingToast)
+
+                    if (blob) {
+                        const downloadUrl = URL.createObjectURL(blob)
+                        const link = document.createElement('a')
+                        const filename = `${chartName}_${new Date().toISOString().split('T')[0]}.png`
+                        link.href = downloadUrl
+                        link.download = filename
+                        document.body.appendChild(link)
+                        link.click()
+                        document.body.removeChild(link)
+                        URL.revokeObjectURL(downloadUrl)
+
+                        toast.success(`Chart berhasil diexport sebagai ${filename}`)
+                    } else {
+                        toast.error("Gagal mengexport chart")
+                    }
+                }, 'image/png')
+            }
+
+            img.onerror = () => {
+                URL.revokeObjectURL(url)
+                toast.dismiss(loadingToast)
+                toast.error("Gagal memuat SVG chart")
+            }
+
+            img.src = url
+        } catch (error) {
+            console.error("Export error:", error)
+            toast.dismiss(loadingToast)
+            toast.error("Terjadi kesalahan saat mengexport chart")
+        }
+    }
 
     // Data untuk Bar Chart
     const barChartData = [
@@ -121,10 +241,8 @@ export function EnhancedChartOverview({ data }: EnhancedChartOverviewProps) {
                         <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => {
-                                // Export to PNG without html2canvas for now
-                                console.log("Export bar-chart")
-                            }}
+                            onClick={() => exportChartAsPNG("bar-chart", "Statistik_Surat")}
+                            title="Export sebagai PNG"
                         >
                             <Download className="h-4 w-4" />
                         </Button>
@@ -175,9 +293,8 @@ export function EnhancedChartOverview({ data }: EnhancedChartOverviewProps) {
                         <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => {
-                                console.log("Export pie-chart")
-                            }}
+                            onClick={() => exportChartAsPNG("pie-chart", "Distribusi_Surat")}
+                            title="Export sebagai PNG"
                         >
                             <Download className="h-4 w-4" />
                         </Button>
@@ -261,9 +378,8 @@ export function EnhancedChartOverview({ data }: EnhancedChartOverviewProps) {
                         <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => {
-                                console.log("Export line-chart")
-                            }}
+                            onClick={() => exportChartAsPNG("line-chart", "Trend_Surat_Bulanan")}
+                            title="Export sebagai PNG"
                         >
                             <Download className="h-4 w-4" />
                         </Button>
@@ -324,9 +440,8 @@ export function EnhancedChartOverview({ data }: EnhancedChartOverviewProps) {
                         <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => {
-                                console.log("Export area-chart")
-                            }}
+                            onClick={() => exportChartAsPNG("area-chart", "Trend_Kumulatif")}
+                            title="Export sebagai PNG"
                         >
                             <Download className="h-4 w-4" />
                         </Button>
@@ -366,9 +481,8 @@ export function EnhancedChartOverview({ data }: EnhancedChartOverviewProps) {
                         <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => {
-                                console.log("Export radar-chart")
-                            }}
+                            onClick={() => exportChartAsPNG("radar-chart", "Metrik_Performa")}
+                            title="Export sebagai PNG"
                         >
                             <Download className="h-4 w-4" />
                         </Button>
