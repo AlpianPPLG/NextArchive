@@ -76,6 +76,22 @@ CREATE TABLE IF NOT EXISTS faqs (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     );
 
+-- 6. Files Table
+CREATE TABLE IF NOT EXISTS files (
+    id VARCHAR(36) PRIMARY KEY,
+    original_name VARCHAR(255) NOT NULL,
+    file_data LONGBLOB NOT NULL,
+    file_type ENUM('pdf', 'png', 'jpg', 'xlsx', 'xls', 'csv') NOT NULL,
+    file_size BIGINT NOT NULL,
+    uploaded_by_user_id VARCHAR(36) NOT NULL,
+    reference_type ENUM('incoming_letter', 'outgoing_letter') NOT NULL,
+    reference_id VARCHAR(36) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (uploaded_by_user_id) REFERENCES users(id) ON DELETE RESTRICT,
+    INDEX idx_reference (reference_type, reference_id)
+);
+
 -- Sample Data
 -- Password: password123 (hashed with bcrypt)
 INSERT INTO users (id, username, email, password_hash, full_name, role) VALUES
@@ -138,4 +154,3 @@ INSERT INTO faqs (question, answer, sort_order) VALUES
 
 -- Query untuk get all FAQs ordered by sort_order
 -- SELECT * FROM faqs ORDER BY sort_order ASC, created_at DESC;
-

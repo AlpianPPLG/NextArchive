@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken"
 import bcrypt from "bcryptjs"
+import { headers } from "next/headers"
 import { query } from "./db"
 import type { User } from "./types"
 
@@ -59,5 +60,25 @@ export async function authenticateUser(username: string, password: string) {
     return {
         token: generateToken(payload),
         user: payload,
+    }
+}
+
+export async function getLoggedInUser(): Promise<User | null> {
+    try {
+        // This will be handled by middleware, which sets the user in the request
+        const headersList = await headers()
+        const token = headersList.get("authorization")?.split(" ")[1]
+        if (!token) return null
+
+        const payload = verifyToken(token)
+        if (!payload) return null
+
+        const results = await query("SELECT * FROM users WHERE id = ?", [payload.userId])
+        const users = results as User[]
+
+        return users[0] || null
+    } catch (error) {
+        console.error("Error getting logged in user:", error)
+        return null
     }
 }

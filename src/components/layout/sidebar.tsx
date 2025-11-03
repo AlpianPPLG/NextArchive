@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Mail, BarChart3, HelpCircle, LogOut, Menu } from "lucide-react"
+import { Mail, BarChart3, HelpCircle, LogOut, Menu, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
@@ -16,6 +16,7 @@ const menuItems = [
     { href: "/surat-keluar", label: "Surat Keluar", icon: Mail },
     { href: "/laporan-masuk", label: "Laporan Surat Masuk", icon: BarChart3 },
     { href: "/laporan-keluar", label: "Laporan Surat Keluar", icon: BarChart3 },
+    { href: "/profile", label: "Profile", icon: User },
     { href: "/faq", label: "FAQ", icon: HelpCircle },
 ]
 
