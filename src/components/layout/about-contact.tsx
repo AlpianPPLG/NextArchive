@@ -13,17 +13,17 @@ const contactCards = [
     {
         icon: Mail,
         title: "Email",
-        content: "info@nextarchive.com"
+        content: "Nova07pplg@gmail.com"
     },
     {
         icon: MapPin,
         title: "Alamat",
-        content: "Jl. Teknologi No. 123\nJakarta, Indonesia"
+        content: "Jl. Pelita 2 No. 31\nSamarinda, Indonesia"
     },
     {
         icon: Phone,
         title: "Telepon",
-        content: "+62 21 1234 5678"
+        content: "+62 812-5844-194"
     }
 ]
 

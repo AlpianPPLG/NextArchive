@@ -66,15 +66,23 @@ export function EnhancedChartOverview({ data }: EnhancedChartOverviewProps) {
             // Wait for chart to render
             await new Promise(resolve => setTimeout(resolve, 500))
 
-            // Find the SVG element within the chart
-            const svgElement = chartElement.querySelector('svg')
+            // Find the ResponsiveContainer which contains the actual chart
+            const containerElement = chartElement.querySelector('.recharts-responsive-container')
+            if (!containerElement) {
+                toast.dismiss(loadingToast)
+                toast.error("Chart container tidak ditemukan")
+                return
+            }
+
+            // Find the SVG element within the container
+            const svgElement = containerElement.querySelector('svg')
             if (!svgElement) {
                 toast.dismiss(loadingToast)
                 toast.error("Chart SVG tidak ditemukan")
                 return
             }
 
-            // Get the chart title
+            // Get the chart title from the card header
             const titleElement = chartElement.querySelector('h3')
             const title = titleElement?.textContent || chartName
 
@@ -115,13 +123,36 @@ export function EnhancedChartOverview({ data }: EnhancedChartOverviewProps) {
             ctx.lineWidth = 1
             ctx.strokeRect(padding / 2, padding, svgWidth + padding, svgHeight + padding)
 
-            // Serialize SVG to string
+            // Clone SVG to avoid modifying the original
+            const svgClone = svgElement.cloneNode(true) as SVGElement
+            
+            // Get computed styles and apply them inline to avoid CSS variable issues
+            const applyComputedStyles = (element: Element, clonedElement: Element) => {
+                const computedStyle = window.getComputedStyle(element)
+                const clonedStyle = (clonedElement as HTMLElement).style
+                
+                // Copy important style properties
+                const importantProps = ['fill', 'stroke', 'color', 'font-size', 'font-family', 'font-weight']
+                importantProps.forEach(prop => {
+                    const value = computedStyle.getPropertyValue(prop)
+                    if (value && value !== 'none') {
+                        clonedStyle.setProperty(prop, value)
+                    }
+                })
+                
+                // Recursively apply to children
+                Array.from(element.children).forEach((child, index) => {
+                    if (clonedElement.children[index]) {
+                        applyComputedStyles(child, clonedElement.children[index])
+                    }
+                })
+            }
+            
+            applyComputedStyles(svgElement, svgClone)
+            
+            // Serialize the cloned SVG
             const serializer = new XMLSerializer()
-            let svgString = serializer.serializeToString(svgElement)
-
-            // Remove any CSS custom properties from the SVG string
-            svgString = svgString.replace(/hsl\(var\(--[^)]+\)\)/g, '#000000')
-            svgString = svgString.replace(/var\(--[^)]+\)/g, '#000000')
+            let svgString = serializer.serializeToString(svgClone)
 
             // Create blob from SVG
             const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' })
