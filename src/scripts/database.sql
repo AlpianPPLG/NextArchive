@@ -77,6 +77,8 @@ CREATE TABLE IF NOT EXISTS faqs (
     );
 
 -- 6. Files Table
+-- Supported file types: PDF, JPG, PNG, XLS, XLSX, CSV
+-- User can select file type from dropdown before uploading
 CREATE TABLE IF NOT EXISTS files (
     id VARCHAR(36) PRIMARY KEY,
     original_name VARCHAR(255) NOT NULL,

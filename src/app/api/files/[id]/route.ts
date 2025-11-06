@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { getServerSession } from 'next-auth'
+import { verifyToken } from '@/lib/auth'
 import { RowDataPacket } from 'mysql2'
 
 interface FileRecord extends RowDataPacket {
@@ -10,21 +10,24 @@ interface FileRecord extends RowDataPacket {
 }
 
 export async function GET(
-    _request: NextRequest,
-    { params }: { params: { id: string } }
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const session = await getServerSession()
-        if (!session?.user) {
+        const token = request.cookies.get("auth_token")?.value
+        if (!token || !verifyToken(token)) {
             return NextResponse.json(
                 { error: 'Unauthorized' },
                 { status: 401 }
             )
         }
 
+        // Await params in Next.js 15+
+        const { id } = await params
+
         const [rows] = await db.execute<FileRecord[]>(
             'SELECT file_data, original_name, file_type FROM files WHERE id = ?',
-            [params.id]
+            [id]
         )
 
         if (!Array.isArray(rows) || rows.length === 0) {

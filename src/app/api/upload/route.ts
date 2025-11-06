@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { getServerSession } from 'next-auth'
+import { verifyToken } from '@/lib/auth'
 import { v4 as uuidv4 } from 'uuid'
 
 interface FileUpload {
@@ -8,13 +8,6 @@ interface FileUpload {
     originalName: string
     fileType: string
     fileSize: number
-}
-
-// Define session user type
-interface SessionUser {
-    id: string
-    name?: string | null
-    email?: string | null
 }
 
 const allowedFileTypes = new Map([
@@ -28,10 +21,10 @@ const allowedFileTypes = new Map([
 
 export async function POST(request: NextRequest) {
     try {
-        const session = await getServerSession()
-        const user = session?.user as SessionUser | undefined
+        const token = request.cookies.get("auth_token")?.value
+        const payload = verifyToken(token || "")
 
-        if (!user?.id) {
+        if (!payload) {
             return NextResponse.json(
                 { error: 'Unauthorized' },
                 { status: 401 }
@@ -89,7 +82,7 @@ export async function POST(request: NextRequest) {
                 buffer,
                 fileType,
                 file.size,
-                user.id,
+                payload.userId,
                 referenceType,
                 referenceId,
             ]
@@ -102,7 +95,11 @@ export async function POST(request: NextRequest) {
             fileSize: file.size,
         }
 
-        return NextResponse.json(response)
+        // Return file URL that points to our file retrieval endpoint
+        return NextResponse.json({
+            ...response,
+            url: `/api/files/${fileId}`
+        })
     } catch (error) {
         console.error('Upload error:', error)
         return NextResponse.json(

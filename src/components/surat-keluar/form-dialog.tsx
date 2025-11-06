@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { FileUpload } from "@/components/shared/file-upload"
+import { FileText } from "lucide-react"
 import { toast } from "sonner"
 
 interface Classification {
@@ -25,6 +26,9 @@ interface OutgoingLetter {
     outgoing_date: string
     subject: string
     file_url?: string | null
+    file_id?: string | null
+    file_name?: string | null
+    file_type?: string | null
     classification_id: number | null
     number_of_copies: number
     archive_file_number: string | null
@@ -70,10 +74,13 @@ export function FormDialog({ open, onOpenChange, onSubmit, letter }: FormDialogP
 
     useEffect(() => {
         if (letter) {
+            // Convert ISO date to yyyy-MM-dd format
+            const dateValue = letter.outgoing_date ? new Date(letter.outgoing_date).toISOString().split('T')[0] : ""
+            
             setFormData({
                 letterNumber: letter.letter_number,
                 destination: letter.destination,
-                outgoingDate: letter.outgoing_date,
+                outgoingDate: dateValue,
                 fileUrl: letter.file_url || "",
                 subject: letter.subject,
                 classificationId: letter.classification_id?.toString() || "",
@@ -100,28 +107,7 @@ export function FormDialog({ open, onOpenChange, onSubmit, letter }: FormDialogP
         setLoading(true)
 
         try {
-            let fileUrl = formData.fileUrl
-
-            // Upload file if selected
-            if (selectedFile) {
-                const uploadFormData = new FormData()
-                uploadFormData.append('file', selectedFile)
-
-                const uploadResponse = await fetch('/api/upload', {
-                    method: 'POST',
-                    body: uploadFormData,
-                })
-
-                if (uploadResponse.ok) {
-                    const uploadData = await uploadResponse.json()
-                    fileUrl = uploadData.url
-                } else {
-                    toast.error("Gagal mengupload file")
-                    setLoading(false)
-                    return
-                }
-            }
-
+            // First, create or update the letter to get the ID
             const url = letter ? `/api/outgoing-letters/${letter.id}` : "/api/outgoing-letters"
             const method = letter ? "PUT" : "POST"
 
@@ -133,21 +119,44 @@ export function FormDialog({ open, onOpenChange, onSubmit, letter }: FormDialogP
                     destination: formData.destination,
                     outgoingDate: formData.outgoingDate,
                     subject: formData.subject,
-                    fileUrl: fileUrl || null,
                     classificationId: formData.classificationId ? Number.parseInt(formData.classificationId) : null,
                     numberOfCopies: Number.parseInt(formData.numberOfCopies),
                     archiveFileNumber: formData.archiveFileNumber,
                 }),
             })
 
-            if (response.ok) {
-                toast.success(letter ? "Surat berhasil diperbarui" : "Surat berhasil ditambahkan")
-                onOpenChange(false)
-                onSubmit()
-            } else {
+            if (!response.ok) {
                 const data = await response.json()
                 toast.error(data.error || "Gagal menyimpan surat")
+                setLoading(false)
+                return
             }
+
+            const letterData = await response.json()
+            const letterId = letter?.id || letterData.id
+
+            // Upload file if selected
+            if (selectedFile && letterId) {
+                const uploadFormData = new FormData()
+                uploadFormData.append('file', selectedFile)
+                uploadFormData.append('referenceType', 'outgoing_letter')
+                uploadFormData.append('referenceId', letterId)
+
+                const uploadResponse = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: uploadFormData,
+                })
+
+                if (!uploadResponse.ok) {
+                    toast.error("Gagal mengupload file")
+                    setLoading(false)
+                    return
+                }
+            }
+
+            toast.success(letter ? "Surat berhasil diperbarui" : "Surat berhasil ditambahkan")
+            onOpenChange(false)
+            onSubmit()
         } catch (error) {
             toast.error("Terjadi kesalahan")
             console.error(error)
@@ -250,12 +259,36 @@ export function FormDialog({ open, onOpenChange, onSubmit, letter }: FormDialogP
                         />
                     </div>
 
-                    <FileUpload
-                        onFileSelect={(file) => setSelectedFile(file)}
-                        onFileRemove={() => setSelectedFile(null)}
-                        currentFileUrl={formData.fileUrl}
-                        disabled={loading}
-                    />
+                    <div className="space-y-2">
+                        <Label>File Surat</Label>
+                        {letter?.file_id && letter?.file_name && !selectedFile && (
+                            <div className="mb-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <FileText className="w-4 h-4 text-blue-600" />
+                                        <div>
+                                            <p className="text-sm font-medium text-blue-900">{letter.file_name}</p>
+                                            <p className="text-xs text-blue-600 uppercase">{letter.file_type}</p>
+                                        </div>
+                                    </div>
+                                    <a
+                                        href={`/api/files/${letter.file_id}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-xs text-blue-600 hover:text-blue-800 underline"
+                                    >
+                                        Lihat File
+                                    </a>
+                                </div>
+                            </div>
+                        )}
+                        <FileUpload
+                            onFileSelect={(file) => setSelectedFile(file)}
+                            onFileRemove={() => setSelectedFile(null)}
+                            currentFileUrl={letter?.file_id ? `/api/files/${letter.file_id}` : formData.fileUrl}
+                            disabled={loading}
+                        />
+                    </div>
 
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

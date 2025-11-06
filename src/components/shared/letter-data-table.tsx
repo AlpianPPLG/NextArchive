@@ -10,6 +10,9 @@ interface BaseLetter {
     id: string
     letter_number: string
     file_url?: string | null
+    file_id?: string | null
+    file_name?: string | null
+    file_type?: string | null
     subject: string
     classification_id: number | null
     number_of_copies: number
@@ -84,16 +87,23 @@ export function LetterDataTable<T extends BaseLetter>({
                                     {letter.subject}
                                 </TableCell>
                                 <TableCell>
-                                    {letter.file_url ? (
-                                        <a
-                                            href={letter.file_url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                                        >
-                                            <FileText className="w-4 h-4" />
-                                            <span className="text-sm">Lihat</span>
-                                        </a>
+                                    {letter.file_id || letter.file_url ? (
+                                        <div className="flex flex-col gap-1">
+                                            <a
+                                                href={letter.file_id ? `/api/files/${letter.file_id}` : (letter.file_url || '#')}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                                            >
+                                                <FileText className="w-4 h-4" />
+                                                <span className="text-sm">Lihat</span>
+                                            </a>
+                                            {letter.file_type && (
+                                                <span className="text-xs text-gray-500 uppercase">
+                                                    {letter.file_type}
+                                                </span>
+                                            )}
+                                        </div>
                                     ) : (
                                         <span className="text-gray-400 text-sm">-</span>
                                     )}

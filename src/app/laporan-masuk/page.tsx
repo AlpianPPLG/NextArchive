@@ -62,7 +62,8 @@ export default function LaporanMasukPage() {
                 if (startDate) params.append("startDate", startDate)
                 if (endDate) params.append("endDate", endDate)
 
-                const response = await fetch(`/api/incoming-letters/archived?${params}`)
+                // Fetch ALL incoming letters (not just archived)
+                const response = await fetch(`/api/incoming-letters?${params}`)
                 if (response.ok) {
                     const result = await response.json()
                     setData(result)

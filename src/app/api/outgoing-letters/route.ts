@@ -12,14 +12,44 @@ export async function GET(request: NextRequest) {
 
         const searchParams = request.nextUrl.searchParams
         const search = searchParams.get("search") || ""
+        const classificationId = searchParams.get("classificationId")
+        const startDate = searchParams.get("startDate")
+        const endDate = searchParams.get("endDate")
 
         let sql = `
-      SELECT ol.*, c.code, c.description 
+      SELECT ol.*, c.code, c.description,
+             (SELECT f.id FROM files f 
+              WHERE f.reference_type = 'outgoing_letter' 
+              AND f.reference_id = ol.id 
+              ORDER BY f.created_at DESC LIMIT 1) as file_id,
+             (SELECT f.original_name FROM files f 
+              WHERE f.reference_type = 'outgoing_letter' 
+              AND f.reference_id = ol.id 
+              ORDER BY f.created_at DESC LIMIT 1) as file_name,
+             (SELECT f.file_type FROM files f 
+              WHERE f.reference_type = 'outgoing_letter' 
+              AND f.reference_id = ol.id 
+              ORDER BY f.created_at DESC LIMIT 1) as file_type
       FROM outgoing_letters ol
       LEFT JOIN classifications c ON ol.classification_id = c.id
       WHERE ol.is_archived = FALSE
     `
         const params: any[] = []
+
+        if (classificationId) {
+            sql += ` AND ol.classification_id = ?`
+            params.push(Number.parseInt(classificationId))
+        }
+
+        if (startDate) {
+            sql += ` AND DATE(ol.outgoing_date) >= ?`
+            params.push(startDate)
+        }
+
+        if (endDate) {
+            sql += ` AND DATE(ol.outgoing_date) <= ?`
+            params.push(endDate)
+        }
 
         if (search) {
             sql += ` AND (ol.letter_number LIKE ? OR ol.subject LIKE ? OR ol.destination LIKE ?)`

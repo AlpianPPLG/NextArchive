@@ -3,9 +3,12 @@
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Upload, X, FileText } from "lucide-react"
 import { validateFile } from "@/lib/utils/upload"
 import { toast } from "sonner"
+
+type FileType = 'pdf' | 'jpg' | 'png' | 'xls' | 'xlsx' | 'csv'
 
 interface FileUploadProps {
     onFileSelect: (file: File) => void
@@ -16,15 +19,32 @@ interface FileUploadProps {
 
 export function FileUpload({ onFileSelect, onFileRemove, currentFileUrl, disabled }: FileUploadProps) {
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
+    const [selectedFileType, setSelectedFileType] = useState<FileType>('pdf')
     const [isDragging, setIsDragging] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
+
+    const fileTypeConfig: Record<FileType, { accept: string; label: string; mimeTypes: string[] }> = {
+        pdf: { accept: '.pdf', label: 'PDF', mimeTypes: ['application/pdf'] },
+        jpg: { accept: '.jpg,.jpeg', label: 'JPG/JPEG', mimeTypes: ['image/jpeg', 'image/jpg'] },
+        png: { accept: '.png', label: 'PNG', mimeTypes: ['image/png'] },
+        xls: { accept: '.xls', label: 'XLS', mimeTypes: ['application/vnd.ms-excel'] },
+        xlsx: { accept: '.xlsx', label: 'XLSX', mimeTypes: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'] },
+        csv: { accept: '.csv', label: 'CSV', mimeTypes: ['text/csv'] }
+    }
 
     const handleFileChange = (file: File | null) => {
         if (!file) return
 
-        const validation = validateFile(file)
-        if (!validation.valid) {
-            toast.error(validation.error || "File tidak valid")
+        // Validate file type based on selected type
+        const config = fileTypeConfig[selectedFileType]
+        if (!config.mimeTypes.includes(file.type)) {
+            toast.error(`File harus bertipe ${config.label}`)
+            return
+        }
+
+        // Validate file size (10MB max)
+        if (file.size > 10 * 1024 * 1024) {
+            toast.error('Ukuran file maksimal 10MB')
             return
         }
 
@@ -64,6 +84,23 @@ export function FileUpload({ onFileSelect, onFileRemove, currentFileUrl, disable
     return (
         <div className="space-y-2">
             <Label>Upload Dokumen (Opsional)</Label>
+            
+            <div className="space-y-2">
+                <Label htmlFor="fileType" className="text-sm">Tipe File</Label>
+                <Select value={selectedFileType} onValueChange={(value) => setSelectedFileType(value as FileType)} disabled={disabled}>
+                    <SelectTrigger id="fileType">
+                        <SelectValue placeholder="Pilih tipe file" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="pdf">PDF</SelectItem>
+                        <SelectItem value="jpg">JPG/JPEG</SelectItem>
+                        <SelectItem value="png">PNG</SelectItem>
+                        <SelectItem value="xls">XLS</SelectItem>
+                        <SelectItem value="xlsx">XLSX</SelectItem>
+                        <SelectItem value="csv">CSV</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
 
             {!selectedFile && !currentFileUrl ? (
                 <div
@@ -81,16 +118,18 @@ export function FileUpload({ onFileSelect, onFileRemove, currentFileUrl, disable
                         ref={fileInputRef}
                         type="file"
                         className="hidden"
-                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                        accept={fileTypeConfig[selectedFileType].accept}
                         onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
                         disabled={disabled}
+                        aria-label={`Upload file ${fileTypeConfig[selectedFileType].label}`}
+                        title={`Upload file ${fileTypeConfig[selectedFileType].label}`}
                     />
                     <div className="flex flex-col items-center gap-2">
                         <Upload className="h-10 w-10 text-muted-foreground" />
                         <div>
                             <p className="text-sm font-medium">Klik atau drag & drop file</p>
                             <p className="text-xs text-muted-foreground mt-1">
-                                PDF, DOC, DOCX, JPG, PNG (Maks. 10MB)
+                                {fileTypeConfig[selectedFileType].label} (Maks. 10MB)
                             </p>
                         </div>
                     </div>

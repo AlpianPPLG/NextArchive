@@ -16,11 +16,12 @@ export function validateFile(file: File): { valid: boolean; error?: string } {
     const maxSize = 10 * 1024 * 1024 // 10MB
     const allowedTypes = [
         'application/pdf',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'image/jpeg',
         'image/jpg',
-        'image/png'
+        'image/png',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'text/csv'
     ]
 
     if (file.size > maxSize) {
@@ -28,7 +29,7 @@ export function validateFile(file: File): { valid: boolean; error?: string } {
     }
 
     if (!allowedTypes.includes(file.type)) {
-        return { valid: false, error: 'Tipe file tidak didukung. Gunakan PDF, DOC, DOCX, atau gambar' }
+        return { valid: false, error: 'Tipe file tidak didukung. Gunakan PDF, JPG, PNG, XLS, XLSX, atau CSV' }
     }
 
     return { valid: true }

@@ -18,7 +18,19 @@ export async function GET(request: NextRequest) {
         const endDate = searchParams.get("endDate")
 
         let sql = `
-      SELECT il.*, c.code, c.description 
+      SELECT il.*, c.code, c.description,
+             (SELECT f.id FROM files f 
+              WHERE f.reference_type = 'incoming_letter' 
+              AND f.reference_id = il.id 
+              ORDER BY f.created_at DESC LIMIT 1) as file_id,
+             (SELECT f.original_name FROM files f 
+              WHERE f.reference_type = 'incoming_letter' 
+              AND f.reference_id = il.id 
+              ORDER BY f.created_at DESC LIMIT 1) as file_name,
+             (SELECT f.file_type FROM files f 
+              WHERE f.reference_type = 'incoming_letter' 
+              AND f.reference_id = il.id 
+              ORDER BY f.created_at DESC LIMIT 1) as file_type
       FROM incoming_letters il
       LEFT JOIN classifications c ON il.classification_id = c.id
       WHERE il.is_archived = TRUE

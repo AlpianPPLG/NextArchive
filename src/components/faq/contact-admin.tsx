@@ -35,7 +35,7 @@ export function ContactAdmin() {
                             </div>
                             <div>
                                 <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Email</h3>
-                                <p className="text-sm text-gray-600 dark:text-gray-300">admin@arsip.local</p>
+                                <p className="text-sm text-gray-600 dark:text-gray-300">Nova07pplg@gmail.com</p>
                             </div>
                         </div>
                     </div>
@@ -48,7 +48,7 @@ export function ContactAdmin() {
                             </div>
                             <div>
                                 <h3 className="font-semibold text-gray-900 dark:text-white mb-1">Telepon</h3>
-                                <p className="text-sm text-gray-600 dark:text-gray-300">+62 XXX-XXXX-XXXX</p>
+                                <p className="text-sm text-gray-600 dark:text-gray-300">+62 812-5844-194</p>
                             </div>
                         </div>
                     </div>
