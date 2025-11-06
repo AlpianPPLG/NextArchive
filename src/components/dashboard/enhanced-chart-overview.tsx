@@ -152,7 +152,7 @@ export function EnhancedChartOverview({ data }: EnhancedChartOverviewProps) {
             
             // Serialize the cloned SVG
             const serializer = new XMLSerializer()
-            let svgString = serializer.serializeToString(svgClone)
+            const svgString = serializer.serializeToString(svgClone)
 
             // Create blob from SVG
             const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' })
