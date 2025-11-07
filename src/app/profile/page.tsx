@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useLayoutEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { Button } from "@/components/ui/button"
@@ -22,7 +22,7 @@ import {
 import { toast } from "sonner"
 
 export default function ProfilePage() {
-  const { user, logout } = useAuth()
+  const { user, logout, refresh, updateUser } = useAuth()
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({
@@ -31,6 +31,30 @@ export default function ProfilePage() {
     username: user?.username || "",
   })
 
+  // Keep form in sync when user data changes (e.g., after refresh)
+  useLayoutEffect(() => {
+    // Only sync when not actively editing to avoid overwriting user's in-progress edits
+    if (isEditing) return
+
+    const newForm = {
+      fullName: user?.fullName || "",
+      email: user?.email || "",
+      username: user?.username || "",
+    }
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setFormData((prev) => {
+      if (
+        prev.fullName === newForm.fullName &&
+        prev.email === newForm.email &&
+        prev.username === newForm.username
+      ) {
+        return prev
+      }
+      return newForm
+    })
+  }, [user, isEditing])
+
   const handleSave = async () => {
     try {
       const response = await fetch("/api/auth/profile", {
@@ -38,6 +62,8 @@ export default function ProfilePage() {
         headers: {
           "Content-Type": "application/json",
         },
+        // Ensure browser sends httpOnly auth cookie
+        credentials: "include",
         body: JSON.stringify({
           full_name: formData.fullName,
           email: formData.email,
@@ -54,6 +80,19 @@ export default function ProfilePage() {
 
       toast.success("Profile updated successfully")
       setIsEditing(false)
+      // Optimistically update global user state so header updates immediately
+      try {
+        updateUser({ fullName: formData.fullName, email: formData.email, username: formData.username })
+      } catch (err) {
+        console.error("Failed to update local user state:", err)
+      }
+
+      // Then refresh from server to ensure data is in sync with DB
+      try {
+        await refresh()
+      } catch (err) {
+        console.error("Failed to refresh user after profile update:", err)
+      }
     } catch (err) {
       console.error(err)
       toast.error("Failed to update profile")
@@ -64,6 +103,8 @@ export default function ProfilePage() {
     try {
       const response = await fetch("/api/auth/profile", {
         method: "DELETE",
+        // Ensure browser sends httpOnly auth cookie
+        credentials: "include",
       })
 
       const data = await response.json()

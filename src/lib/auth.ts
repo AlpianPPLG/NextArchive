@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken"
 import bcrypt from "bcryptjs"
-import { headers } from "next/headers"
+import { cookies } from "next/headers"
 import { query } from "./db"
 import type { User } from "./types"
 
@@ -65,9 +65,10 @@ export async function authenticateUser(username: string, password: string) {
 
 export async function getLoggedInUser(): Promise<User | null> {
     try {
-        // This will be handled by middleware, which sets the user in the request
-        const headersList = await headers()
-        const token = headersList.get("authorization")?.split(" ")[1]
+        // Try to read token from auth cookie (set on login).
+        const cookieStore = await cookies()
+        const token = cookieStore.get("auth_token")?.value ?? null
+
         if (!token) return null
 
         const payload = verifyToken(token)
